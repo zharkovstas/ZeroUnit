@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <PackageId>ZeroUnit</PackageId>
-    <PackageVersion>1.0.0-alpha</PackageVersion>
     <Authors>zharkovstas</Authors>
     <Description>A build-time unit-testing library for .NET. Generates you a Program.cs, that runs
       your tests</Description>
@@ -14,10 +13,18 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs"
+      Visible="false" />
   </ItemGroup>
 
 </Project>

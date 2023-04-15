@@ -23,13 +23,22 @@ public class ProgramGenerator : IIncrementalGenerator
     private static bool IsTestMethod(SyntaxNode node, CancellationToken cancellationToken)
     {
         return node is MethodDeclarationSyntax method
-            && method.ReturnType is PredefinedTypeSyntax returnType
-            && returnType.Keyword.IsKind(SyntaxKind.VoidKeyword)
+            && IsVoid(method.ReturnType)
             && method.ParameterList.Parameters.Count == 0
             && method.Parent is ClassDeclarationSyntax @class
             && method.Modifiers.Any(SyntaxKind.PublicKeyword)
-            && @class.Modifiers.Any(SyntaxKind.StaticKeyword)
             && @class.Modifiers.Any(SyntaxKind.PublicKeyword);
+    }
+
+    private static bool IsVoid(TypeSyntax returnType)
+    {
+        return returnType switch
+        {
+            PredefinedTypeSyntax predefinedType => predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword),
+            IdentifierNameSyntax identifierName => identifierName.Identifier.Text == "Task",
+            QualifiedNameSyntax qualifiedName => qualifiedName.ToString() == "System.Threading.Tasks.Task",
+            _ => false
+        };
     }
 
     private static IMethodSymbol? GetTestMethod(GeneratorSyntaxContext context, CancellationToken cancellationToken)
@@ -41,59 +50,6 @@ public class ProgramGenerator : IIncrementalGenerator
         SourceProductionContext context,
         ImmutableArray<IMethodSymbol> methods)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine("internal sealed class Program");
-        sb.AppendLine("{");
-        sb.AppendLine("    private static void Main(string[] args)");
-        sb.AppendLine("    {");
-        sb.AppendLine("#pragma warning disable CA1303");
-        sb.AppendLine("#pragma warning disable CA1031");
-        foreach (var method in methods)
-        {
-            sb.AppendLine("        try");
-            sb.AppendLine("        {");
-            var methodFullName = $"{GetFullMetadataName(method.ContainingType)}.{method.Name}";
-            sb.AppendLine($"                {methodFullName}();");
-            sb.AppendLine(@$"                Console.WriteLine(""[v] {methodFullName}"");");
-            sb.AppendLine("        }");
-            sb.AppendLine("        catch (Exception ex)");
-            sb.AppendLine("        {");
-            sb.AppendLine(@$"                Console.WriteLine($""[x] {methodFullName}: {{ex.Message}}"");");
-            sb.AppendLine("        }");
-        }
-        sb.AppendLine("#pragma warning disable CA1031");
-        sb.AppendLine("#pragma warning restore CA1303");
-        sb.AppendLine("    }");
-        sb.AppendLine("}");
-        context.AddSource("Program.cs", sb.ToString());
-    }
-
-    private static string GetFullMetadataName(INamespaceOrTypeSymbol symbol)
-    {
-        ISymbol s = symbol;
-        var sb = new StringBuilder(s.MetadataName);
-
-        var last = s;
-        s = s.ContainingSymbol;
-        while (!IsRootNamespace(s))
-        {
-            if (s is ITypeSymbol && last is ITypeSymbol)
-            {
-                sb.Insert(0, '+');
-            }
-            else
-            {
-                sb.Insert(0, '.');
-            }
-            sb.Insert(0, s.MetadataName);
-            s = s.ContainingSymbol;
-        }
-
-        return sb.ToString();
-    }
-
-    private static bool IsRootNamespace(ISymbol s)
-    {
-        return s is INamespaceSymbol && ((INamespaceSymbol)s).IsGlobalNamespace;
+        context.AddSource("Program.cs", ProgramCodeGenerator.Generate(methods));
     }
 }
