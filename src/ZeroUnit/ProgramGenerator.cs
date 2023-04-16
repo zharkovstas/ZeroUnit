@@ -22,12 +22,7 @@ public class ProgramGenerator : IIncrementalGenerator
 
     private static bool IsTestMethod(SyntaxNode node, CancellationToken cancellationToken)
     {
-        return node is MethodDeclarationSyntax method
-            && IsVoid(method.ReturnType)
-            && method.ParameterList.Parameters.Count == 0
-            && method.Parent is ClassDeclarationSyntax @class
-            && method.Modifiers.Any(SyntaxKind.PublicKeyword)
-            && @class.Modifiers.Any(SyntaxKind.PublicKeyword);
+        return node is MethodDeclarationSyntax method && Predicates.IsTestMethod(method);
     }
 
     private static bool IsVoid(TypeSyntax returnType)

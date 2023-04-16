@@ -8,9 +8,8 @@ internal static class ProgramCodeGenerator
 {
     internal static string Generate(IReadOnlyList<IMethodSymbol> methods)
     {
-        var callableMethods = methods
-            .Where(x => x.IsStatic || x.ContainingType.InstanceConstructors.Any(x => x.Parameters.Length == 0))
-            .Where(x => x.Name != "Dispose")
+        var testMethods = methods
+            .Where(Predicates.IsTestMethod)
             .ToArray();
 
         var sb = new StringBuilder();
@@ -19,11 +18,11 @@ internal static class ProgramCodeGenerator
         sb.AppendLine("using System.Threading;");
         sb.AppendLine("using System.Threading.Tasks;");
         sb.AppendLine();
-        sb.AppendLine("namespace Tests");
+        sb.AppendLine("namespace ZeroUnit");
         sb.AppendLine("{");
         sb.AppendLine("    internal sealed class Program");
         sb.AppendLine("    {");
-        if (callableMethods.Length > 0)
+        if (testMethods.Length > 0)
         {
             sb.AppendLine("        private static async Task<int> Main(string[] args)");
         }
@@ -34,15 +33,15 @@ internal static class ProgramCodeGenerator
         sb.AppendLine("        {");
         sb.AppendLine("            var passedCount = 0;");
         sb.AppendLine("            var failedCount = 0;");
-        if (callableMethods.Length > 0)
+        if (testMethods.Length > 0)
         {
 
             sb.AppendLine();
             sb.AppendLine("            var testNames = new[]");
             sb.AppendLine("            {");
-            foreach (var method in callableMethods)
+            foreach (var method in testMethods)
             {
-                var methodFullName = $"{GetFullMetadataName(method.ContainingType)}.{method.Name}";
+                var methodFullName = $"{GetFullName(method.ContainingType)}.{method.Name}";
                 sb.AppendLine(@$"                ""{methodFullName}"",");
             }
             sb.AppendLine("            };");
@@ -58,7 +57,7 @@ internal static class ProgramCodeGenerator
             sb.AppendLine();
             sb.AppendLine("#pragma warning disable CA1031");
             sb.AppendLine("            await Parallel");
-            sb.AppendLine($"                .ForEachAsync(Enumerable.Range(0, {callableMethods.Length}), async (i, cancellationToken) =>");
+            sb.AppendLine($"                .ForEachAsync(Enumerable.Range(0, {testMethods.Length}), async (i, cancellationToken) =>");
             sb.AppendLine("                {");
             sb.AppendLine("                    try");
             sb.AppendLine("                    {");
@@ -85,7 +84,7 @@ internal static class ProgramCodeGenerator
         sb.AppendLine();
         sb.AppendLine("            return failedCount;");
         sb.AppendLine("        }");
-        if (callableMethods.Length > 0)
+        if (testMethods.Length > 0)
         {
 
             sb.AppendLine();
@@ -94,9 +93,9 @@ internal static class ProgramCodeGenerator
             sb.AppendLine("        {");
             sb.AppendLine("            switch (index)");
             sb.AppendLine("            {");
-            for (int i = 0; i < callableMethods.Length; i++)
+            for (int i = 0; i < testMethods.Length; i++)
             {
-                var method = callableMethods[i];
+                var method = testMethods[i];
                 sb.AppendLine($"                case {i}:");
                 sb.AppendLine($"{GetCallStatements(method, i, "                    ")}");
                 sb.AppendLine("                    break;");
@@ -115,8 +114,8 @@ internal static class ProgramCodeGenerator
     private static string GetCallStatements(IMethodSymbol method, int index, string prefix)
     {
         var containingType = method.ContainingType;
-        var containingTypeFullName = GetFullMetadataName(containingType);
-        var isContaningTypeDisposable = containingType.AllInterfaces.Any(x => GetFullMetadataName(x) == "System.IDisposable");
+        var containingTypeFullName = GetFullName(containingType);
+        var isContaningTypeDisposable = containingType.AllInterfaces.Any(x => GetFullName(x) == "System.IDisposable");
 
         var sb = new StringBuilder();
 
@@ -145,7 +144,7 @@ internal static class ProgramCodeGenerator
             sb.Append("    ");
         }
 
-        if (method.IsAsync)
+        if (!method.ReturnsVoid)
         {
             sb.Append("await ");
         }
@@ -161,7 +160,7 @@ internal static class ProgramCodeGenerator
 
         sb.Append($".{method.Name}()");
 
-        if (method.IsAsync)
+        if (!method.ReturnsVoid)
         {
             sb.Append(".ConfigureAwait(false)");
         }
@@ -171,32 +170,26 @@ internal static class ProgramCodeGenerator
         return sb.ToString();
     }
 
-    private static string GetFullMetadataName(INamespaceOrTypeSymbol symbol)
+    private static string GetFullName(INamespaceOrTypeSymbol symbol)
     {
-        ISymbol s = symbol;
-        var sb = new StringBuilder(s.MetadataName);
-
-        var last = s;
-        s = s.ContainingSymbol;
-        while (!IsRootNamespace(s))
+        ISymbol current = symbol;
+        var parts = new List<string>
         {
-            if (s is ITypeSymbol && last is ITypeSymbol)
-            {
-                sb.Insert(0, '+');
-            }
-            else
-            {
-                sb.Insert(0, '.');
-            }
-            sb.Insert(0, s.MetadataName);
-            s = s.ContainingSymbol;
+            symbol.MetadataName
+        };
+        var last = current;
+
+        for (
+            current = current.ContainingSymbol;
+            current is not INamespaceSymbol { IsGlobalNamespace: true };
+            current = current.ContainingSymbol)
+        {
+            parts.Add(current is ITypeSymbol && last is ITypeSymbol ? "+" : ".");
+            parts.Add(current.MetadataName);
         }
 
-        return sb.ToString();
-    }
+        parts.Reverse();
 
-    private static bool IsRootNamespace(ISymbol s)
-    {
-        return s is INamespaceSymbol && ((INamespaceSymbol)s).IsGlobalNamespace;
+        return string.Join("", parts);
     }
 }
