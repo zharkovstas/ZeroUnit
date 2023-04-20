@@ -25,17 +25,6 @@ public class ProgramGenerator : IIncrementalGenerator
         return node is MethodDeclarationSyntax method && Predicates.IsTestMethod(method);
     }
 
-    private static bool IsVoid(TypeSyntax returnType)
-    {
-        return returnType switch
-        {
-            PredefinedTypeSyntax predefinedType => predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword),
-            IdentifierNameSyntax identifierName => identifierName.Identifier.Text == "Task",
-            QualifiedNameSyntax qualifiedName => qualifiedName.ToString() == "System.Threading.Tasks.Task",
-            _ => false
-        };
-    }
-
     private static IMethodSymbol? GetTestMethod(GeneratorSyntaxContext context, CancellationToken cancellationToken)
     {
         return context.SemanticModel.GetDeclaredSymbol(context.Node, cancellationToken) as IMethodSymbol;
