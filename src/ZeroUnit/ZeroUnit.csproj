@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ZeroUnit</PackageId>
     <Authors>zharkovstas</Authors>
-    <Description>A build-time unit-testing library for .NET. Generates you a Program.cs, that runs
+    <Description>A Roslyn-powered build-time unit-testing library for .NET. Generates a Program.cs that runs
       your tests</Description>
     <PackageProjectUrl>https://github.com/zharkovstas/ZeroUnit</PackageProjectUrl>
     <RepositoryUrl>https://github.com/zharkovstas/ZeroUnit</RepositoryUrl>
