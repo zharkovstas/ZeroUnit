@@ -12,7 +12,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ZeroUnit\ZeroUnit.csproj"
       ReferenceOutputAssembly="false"
-      OutputItemType="Analyzer" />
+      OutputItemType="Analyzer"
+      ExcludeAssets="all" />
   </ItemGroup>
 
 </Project>

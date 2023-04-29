@@ -14,9 +14,10 @@ Make the `.csproj` with your tests a console app and reference the `ZeroUnit` pa
 
 <ItemGroup>
   <PackageReference Include="ZeroUnit"
-    Version="1.0.1"
+    Version="1.1.0"
     ReferenceOutputAssembly="false"
-    OutputItemType="Analyzer" />
+    OutputItemType="Analyzer"
+    ExcludeAssets="all" />
 </ItemGroup>
 ```
 

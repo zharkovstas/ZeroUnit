@@ -28,14 +28,12 @@ internal static class ProgramCodeGenerator
         }
         else
         {
-            sb.AppendLine("        private static int Main(string[] args)");
+            sb.AppendLine("        private static void Main(string[] args)");
         }
         sb.AppendLine("        {");
-        sb.AppendLine("            var passedCount = 0;");
-        sb.AppendLine("            var failedCount = 0;");
         if (testMethods.Length > 0)
         {
-
+            sb.AppendLine("            var passedCount = 0;");
             sb.AppendLine();
             sb.AppendLine("            var testNames = new[]");
             sb.AppendLine("            {");
@@ -46,12 +44,24 @@ internal static class ProgramCodeGenerator
             }
             sb.AppendLine("            };");
             sb.AppendLine();
-            sb.AppendLine("            using var output = new BlockingCollection<string>();");
-            sb.AppendLine("            var outputTask = Task.Run(() =>");
+            sb.AppendLine("            using var finishedTests = new BlockingCollection<(string Name, string? FailMessage)>();");
+            sb.AppendLine("            var failedTests = new ConcurrentQueue<(string Name, Exception Exception)>();");
+            sb.AppendLine("            var printProgressTask = Task.Run(() =>");
             sb.AppendLine("            {");
-            sb.AppendLine("                foreach (var text in output.GetConsumingEnumerable())");
+            sb.AppendLine("                foreach (var (name, failMessage) in finishedTests.GetConsumingEnumerable())");
             sb.AppendLine("                {");
-            sb.AppendLine("                    Console.WriteLine(text);");
+            sb.AppendLine("                    if (failMessage != null)");
+            sb.AppendLine("                    {");
+            sb.AppendLine("                        Console.ForegroundColor = ConsoleColor.Red;");
+            sb.AppendLine(@"                        Console.WriteLine($""x {name}: {failMessage}"");");
+            sb.AppendLine("                        Console.ResetColor();");
+            sb.AppendLine("                    }");
+            sb.AppendLine("                    else");
+            sb.AppendLine("                    {");
+            sb.AppendLine("                        Console.ForegroundColor = ConsoleColor.Green;");
+            sb.AppendLine(@"                        Console.WriteLine($""v {name}"");");
+            sb.AppendLine("                        Console.ResetColor();");
+            sb.AppendLine("                    }");
             sb.AppendLine("                }");
             sb.AppendLine("            });");
             sb.AppendLine();
@@ -61,28 +71,53 @@ internal static class ProgramCodeGenerator
             sb.AppendLine("                {");
             sb.AppendLine("                    try");
             sb.AppendLine("                    {");
-            sb.AppendLine($"                        await RunTestAsync(i).ConfigureAwait(false);");
+            sb.AppendLine("                        await RunTestAsync(i).ConfigureAwait(false);");
             sb.AppendLine("                        Interlocked.Increment(ref passedCount);");
-            sb.AppendLine(@"                        output.Add($""v {testNames[i]}"", cancellationToken);");
+            sb.AppendLine("                        finishedTests.Add((testNames[i], null), cancellationToken);");
             sb.AppendLine("                    }");
             sb.AppendLine("                    catch (Exception ex)");
             sb.AppendLine("                    {");
-            sb.AppendLine("                        Interlocked.Increment(ref failedCount);");
-            sb.AppendLine(@"                        output.Add($""x {testNames[i]}: {ex}"", cancellationToken);");
+            sb.AppendLine("                        finishedTests.Add((testNames[i], ex.Message), cancellationToken);");
+            sb.AppendLine("                        failedTests.Enqueue((testNames[i], ex));");
             sb.AppendLine("                    }");
             sb.AppendLine("                })");
             sb.AppendLine("                .ConfigureAwait(false);");
             sb.AppendLine("#pragma warning restore CA1031");
             sb.AppendLine();
-            sb.AppendLine("            output.CompleteAdding();");
-            sb.AppendLine("            await outputTask.ConfigureAwait(false);");
+            sb.AppendLine("            finishedTests.CompleteAdding();");
+            sb.AppendLine("            await printProgressTask.ConfigureAwait(false);");
+            sb.AppendLine("            Console.WriteLine();");
+            sb.AppendLine();
+            sb.AppendLine("            if (!failedTests.IsEmpty)");
+            sb.AppendLine("            {");
+            sb.AppendLine("                Console.ForegroundColor = ConsoleColor.Red;");
+            sb.AppendLine("                foreach (var (name, exception) in failedTests)");
+            sb.AppendLine("                {");
+            sb.AppendLine(@"                    Console.WriteLine($""Failed test: {name}"");");
+            sb.AppendLine(@"                    Console.WriteLine();");
+            sb.AppendLine("                    Console.WriteLine(exception.Message);");
+            sb.AppendLine(@"                    Console.WriteLine();");
+            sb.AppendLine(@"                    Console.WriteLine($""Exception type: {exception.GetType()}"");");
+            sb.AppendLine(@"                    Console.WriteLine($""Stack trace: {exception.StackTrace}"");");
+            sb.AppendLine(@"                    Console.WriteLine();");
+            sb.AppendLine("                }");
+            sb.AppendLine("            }");
+            sb.AppendLine("            else");
+            sb.AppendLine("            {");
+            sb.AppendLine("                Console.ForegroundColor = ConsoleColor.Green;");
+            sb.AppendLine("            }");
+            sb.AppendLine();
+            sb.AppendLine(@"            Console.WriteLine($""Failed: {failedTests.Count}, Passed: {passedCount}, Total: {failedTests.Count + passedCount}"");");
+            sb.AppendLine("            Console.ResetColor();");
+            sb.AppendLine();
+            sb.AppendLine("            return failedTests.Count;");
         }
-        sb.AppendLine();
-        sb.AppendLine("            Console.ForegroundColor = failedCount > 0 ? ConsoleColor.Red : ConsoleColor.Green;");
-        sb.AppendLine(@"            Console.WriteLine($""Failed: {failedCount}, Passed: {passedCount}, Total: {failedCount + passedCount}"");");
-        sb.AppendLine("            Console.ResetColor();");
-        sb.AppendLine();
-        sb.AppendLine("            return failedCount;");
+        else
+        {
+            sb.AppendLine(@"#pragma warning disable CA1303");
+            sb.AppendLine(@"            Console.WriteLine(""Failed: 0, Passed: 0, Total: 0"");");
+            sb.AppendLine(@"#pragma warning restore CA1303");
+        }
         sb.AppendLine("        }");
         if (testMethods.Length > 0)
         {

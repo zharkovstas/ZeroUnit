@@ -3,8 +3,8 @@
   <PropertyGroup>
     <PackageId>ZeroUnit</PackageId>
     <Authors>zharkovstas</Authors>
-    <Description>A Roslyn-powered build-time unit-testing library for .NET. Generates a Program.cs that runs
-      your tests</Description>
+    <Description>A Roslyn-powered build-time unit-testing library for .NET. Generates a Program.cs
+      that runs your tests</Description>
     <PackageProjectUrl>https://github.com/zharkovstas/ZeroUnit</PackageProjectUrl>
     <RepositoryUrl>https://github.com/zharkovstas/ZeroUnit</RepositoryUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -15,9 +15,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <developmentDependency>true</developmentDependency>
   </PropertyGroup>
 
   <ItemGroup>
