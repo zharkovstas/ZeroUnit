@@ -1,8 +1,8 @@
-namespace ZeroUnit.Tests;
+namespace ZeroUnit.Example.Tests;
 
-public class ProtectedConstructorNonTests
+public class PrivateConstructorNonTests
 {
-    protected ProtectedConstructorNonTests()
+    private PrivateConstructorNonTests()
     {
     }
 

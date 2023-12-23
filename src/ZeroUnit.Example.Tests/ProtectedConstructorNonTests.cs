@@ -1,8 +1,8 @@
-namespace ZeroUnit.Tests;
+namespace ZeroUnit.Example.Tests;
 
-public class InternalConstructorNonTests
+public class ProtectedConstructorNonTests
 {
-    internal InternalConstructorNonTests()
+    protected ProtectedConstructorNonTests()
     {
     }
 

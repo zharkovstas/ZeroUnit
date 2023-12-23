@@ -26,6 +26,13 @@ internal static class Predicates
             && method.Name != "Dispose";
     }
 
+    internal static bool IsPartial(INamedTypeSymbol type)
+    {
+        return type.DeclaringSyntaxReferences.Any(
+            r => r.GetSyntax() is ClassDeclarationSyntax classDeclaration && IsPartial(classDeclaration)
+        );
+    }
+
     private static bool IsVoidOrTask(TypeSyntax returnType)
     {
         return returnType switch
@@ -42,5 +49,10 @@ internal static class Predicates
         return !type.IsAbstract && !type.IsGenericType && type.InstanceConstructors.Any(
             x => x.Parameters.Length == 0 && x.DeclaredAccessibility == Accessibility.Public
         );
+    }
+
+    private static bool IsPartial(ClassDeclarationSyntax classDeclaration)
+    {
+        return classDeclaration.Modifiers.Any(SyntaxKind.PartialKeyword);
     }
 }

@@ -1,6 +1,6 @@
 # ZeroUnit
 
-`ZeroUnit` is a Roslyn-powered build-time unit-testing library for .NET. Generates a `Program.cs` that runs your tests. No `Microsoft.NET.Test.Sdk` needed. No runtime-dependencies.
+`ZeroUnit` is a zero-dependency unit-testing library for .NET. It generates a `Program.cs` that runs your tests. No `Microsoft.NET.Test.Sdk` or runtime dependencies needed.
 
 ## Installing
 
@@ -21,7 +21,7 @@ Make the `.csproj` with your tests a console app and reference the `ZeroUnit` pa
 </ItemGroup>
 ```
 
-Delete `Program.cs` if it exists.
+Delete the class (usually named `Program`) with the `Main` method if it exists.
 
 ## Writing tests
 
@@ -41,3 +41,23 @@ Use a parameterless constructor for setup and `IDisposable.Dispose` for teardown
 Run tests with `dotnet run`.
 
 `ZeroUnit` generates a program that runs the tests in parallel. Non-static classes are instantiated for each test. Disposable classes are disposed.
+
+## Global setup and teardown
+
+Add a `Program` class like this:
+
+```csharp
+partial class Program
+{
+    static async Task<int> Main()
+    {
+        // global setup
+        var failedTestCount = await RunTestsAsync();
+        // global teardown
+        return failedTestCount;
+    }
+
+    // ZeroUnit will implement this
+    private static partial Task<int> RunTestsAsync();
+}
+```

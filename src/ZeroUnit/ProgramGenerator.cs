@@ -1,5 +1,4 @@
 ﻿using System.Collections.Immutable;
-using System.Text;
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,10 +13,16 @@ public class ProgramGenerator : IIncrementalGenerator
     {
         var methods = context.SyntaxProvider
             .CreateSyntaxProvider(IsTestMethod, GetTestMethod)
-            .Where(method => method is not null)
-            .Collect();
+            .Where(method => method is not null);
 
-        context.RegisterSourceOutput(methods, GenerateCode!);
+        var entryPoint = context.CompilationProvider
+            .Select((c, ct) => c.GetEntryPoint(ct));
+
+        var provider = entryPoint.Combine(methods.Collect());
+
+        context.RegisterSourceOutput(
+            provider,
+            static (context, x) => GenerateCode(context, x.Left, x.Right));
     }
 
     private static bool IsTestMethod(SyntaxNode node, CancellationToken cancellationToken)
@@ -32,8 +37,9 @@ public class ProgramGenerator : IIncrementalGenerator
 
     private static void GenerateCode(
         SourceProductionContext context,
-        ImmutableArray<IMethodSymbol> methods)
+        IMethodSymbol? entryPoint,
+        ImmutableArray<IMethodSymbol?> methods)
     {
-        context.AddSource("Program.cs", ProgramCodeGenerator.Generate(methods));
+        context.AddSource("Program.g.cs", ProgramCodeGenerator.Generate(entryPoint, methods));
     }
 }

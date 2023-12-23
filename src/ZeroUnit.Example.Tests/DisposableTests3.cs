@@ -1,4 +1,4 @@
-namespace ZeroUnit.Tests;
+namespace ZeroUnit.Example.Tests;
 
 public sealed class DisposableTests3 : IDisposableTests
 {

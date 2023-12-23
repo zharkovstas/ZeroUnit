@@ -10,12 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.4.0" />
-    <PackageReference Include="That" Version="1.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ZeroUnit\ZeroUnit.csproj" OutputItemType="Analyzer" />
+    <ProjectReference Include="..\ZeroUnit\ZeroUnit.csproj"
+      ReferenceOutputAssembly="false"
+      OutputItemType="Analyzer"
+      ExcludeAssets="all" />
   </ItemGroup>
 
 </Project>
