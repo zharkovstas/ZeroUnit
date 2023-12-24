@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroUnit.Example.Tests", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroUnit.Tests", "src\ZeroUnit.Tests\ZeroUnit.Tests.csproj", "{07400793-F070-49EE-8219-1CB43E0B970A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeroUnit.NetFramework.Example.Tests", "src\ZeroUnit.NetFramework.Example.Tests\ZeroUnit.NetFramework.Example.Tests.csproj", "{94A73041-1A4E-4B3D-929B-E55EF90AA6AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,10 +34,15 @@ Global
 		{07400793-F070-49EE-8219-1CB43E0B970A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07400793-F070-49EE-8219-1CB43E0B970A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{07400793-F070-49EE-8219-1CB43E0B970A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94A73041-1A4E-4B3D-929B-E55EF90AA6AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94A73041-1A4E-4B3D-929B-E55EF90AA6AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94A73041-1A4E-4B3D-929B-E55EF90AA6AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94A73041-1A4E-4B3D-929B-E55EF90AA6AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{19000778-9559-4A89-B1A6-3B7F402EDC3E} = {408130F1-6389-4B71-BCA4-B3B1734AA1BD}
 		{174049C4-BFD5-451A-BB9A-35D76C945836} = {408130F1-6389-4B71-BCA4-B3B1734AA1BD}
 		{07400793-F070-49EE-8219-1CB43E0B970A} = {408130F1-6389-4B71-BCA4-B3B1734AA1BD}
+		{94A73041-1A4E-4B3D-929B-E55EF90AA6AB} = {408130F1-6389-4B71-BCA4-B3B1734AA1BD}
 	EndGlobalSection
 EndGlobal

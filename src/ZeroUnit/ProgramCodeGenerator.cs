@@ -18,6 +18,8 @@ internal static class ProgramCodeGenerator
 
         sb.AppendLine("using System;");
         sb.AppendLine("using System.Collections.Concurrent;");
+        sb.AppendLine("using System.Collections.Generic;");
+        sb.AppendLine("using System.Linq;");
         sb.AppendLine("using System.Threading;");
         sb.AppendLine("using System.Threading.Tasks;");
         sb.AppendLine();
@@ -66,9 +68,9 @@ internal static class ProgramCodeGenerator
 
         if (mainMethod is null)
         {
-            sb.AppendLine("public static Task<int> Main()");
+            sb.AppendLine("public static int Main()");
             sb.AppendLine("{");
-            sb.AppendLine("    return RunTestsAsync();");
+            sb.AppendLine("    return RunTestsAsync().GetAwaiter().GetResult();");
             sb.AppendLine("}");
             sb.AppendLine();
         }

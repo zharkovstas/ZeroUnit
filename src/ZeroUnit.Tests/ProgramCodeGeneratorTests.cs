@@ -25,9 +25,9 @@ public class ProgramCodeGeneratorTests
             mainMethod: null,
             methods: Array.Empty<IMethodSymbol>());
 
-        var expectedMethod = @"    public static Task<int> Main()
+        var expectedMethod = @"    public static int Main()
     {
-        return RunTestsAsync();
+        return RunTestsAsync().GetAwaiter().GetResult();
     }";
 
         Assert.That(
